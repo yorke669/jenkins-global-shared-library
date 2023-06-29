@@ -1,5 +1,6 @@
 package com.wict.jenkins
 
+
 class DefaultTools implements Serializable {
     def delete(jenkins, path, pipelineParameters) {
         jenkins.sh "ls -l ${path}"
