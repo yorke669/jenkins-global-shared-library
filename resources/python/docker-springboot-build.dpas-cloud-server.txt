@@ -1,0 +1,9 @@
+ FROM {{obj.param.harborHost}}/wict/jdk:1.8
+ RUN mkdir -p /opt/{jar,wkhtmltopdf}  \
+    && yum install openssl fontconfig freetype libpng libjpeg libX11 libXext libXrender xorg-x11-fonts-Type1 xorg-x11-fonts-75dpi -y \
+    && curl -O ftp://192.168.9.215/package/wkhtmltox-0.12.6-1.centos7.x86_64.rpm \
+    && rpm -ivh /usr/local/jdk/wkhtmltox-0.12.6-1.centos7.x86_64.rpm \
+    && yum -y install zip
+ WORKDIR /opt/jar
+ ADD {{obj.param.jarPathFile}} {{obj.param.deployServerName}}.jar
+ ENTRYPOINT ["sh","-c","java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /opt/jar/{{obj.param.deployServerName}}.jar"]

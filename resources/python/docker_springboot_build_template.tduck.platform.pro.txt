@@ -1,0 +1,12 @@
+FROM openjdk:8u272-jdk as builder
+WORKDIR application
+ADD {{obj.param.jarPathFile}} application.jar
+RUN java -Djarmode=layertools -jar application.jar extract
+
+FROM openjdk:8u272-jdk
+WORKDIR application
+COPY --from=builder application/dependencies/ ./
+COPY --from=builder application/snapshot-dependencies/ ./
+COPY --from=builder application/spring-boot-loader/ ./
+COPY --from=builder application/application/ ./
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -server -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:-OmitStackTraceInFastThrow -Djava.security.egd=file:/dev/./urandom org.springframework.boot.loader.JarLauncher"]

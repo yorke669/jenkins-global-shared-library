@@ -1,0 +1,3 @@
+ FROM {{obj.param.harborHost}}/wict/web:nginx
+MAINTAINER xingyuke
+COPY {{obj.param.webBuildFile}}/ /usr/share/nginx/html/

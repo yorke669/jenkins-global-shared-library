@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{obj.param.metadataName}}-{{obj.param.env}}
+  namespace: {{obj.param.metadataNameSpace}}-{{obj.param.env}}
+spec:
+  selector:
+    matchLabels:
+      app: {{obj.param.metadataName}}
+      project: {{obj.param.project}}
+      env: {{obj.param.env}}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{obj.param.metadataName}}
+        env: {{obj.param.env}}
+        project: {{obj.param.project}}
+        ci: {{obj.param.ci}}
+    spec:
+      terminationGracePeriodSeconds: 4
+      imagePullSecrets:
+        - name: harbor-secret
+      initContainers:
+        - image: harbor.cqxyy.net/wict/skywalking-agent:wict
+          name: sw-agent-sidecar
+          imagePullPolicy: IfNotPresent
+          command: ['sh']
+          args: ['-c','mkdir -p /skywalking/agent && cp -r /usr/skywalking/agent/* /skywalking/agent']
+          volumeMounts:
+            - mountPath: /skywalking/agent
+              name: sw-agent
+      containers:
+      - name: {{obj.param.metadataName}}
+        image: {{obj.param.containersImage}}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          name: web
+          protocol: TCP
+        resources:
+          limits:
+            memory: {{obj.param.resourcesMaxMemory}}
+          requests:
+            memory: 128Mi
+        livenessProbe:
+          httpGet:
+            path: {{obj.param.actuator}}
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 12
+        readinessProbe:
+          httpGet:
+            path: {{obj.param.actuator}}
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 12
+        volumeMounts:
+        - name: logs-pvc
+          subPath: logs
+          mountPath: /opt/jar/logs
+        - name: sw-agent
+          mountPath: /skywalking/agent
+        - name: date-config
+          mountPath: /etc/localtime
+        - name: nfs-bigdata
+          mountPath: /opt/bigdata
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: LIMITS_MEMORY
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+              divisor: 1Mi
+        - name: JAVA_OPTS
+          value: -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0  {{obj.param.javaOpts}}
+      securityContext:
+        fsGroup: 1000
+      volumes:
+      - name: logs-pvc
+        persistentVolumeClaim:
+          claimName: logs-pvc-{{obj.param.env}}
+      - name: sw-agent
+        emptyDir: {}
+      - name: date-config
+        hostPath:
+          path: /etc/localtime
+      - name: nfs-bigdata
+        hostPath:
+          path: /opt/bigdata
+

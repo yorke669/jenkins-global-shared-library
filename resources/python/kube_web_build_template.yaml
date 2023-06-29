@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{obj.param.metadataName}}-{{obj.param.env}}
+  namespace: {{obj.param.metadataNameSpace}}-{{obj.param.env}}
+spec:
+  selector:
+    matchLabels:
+      app: {{obj.param.metadataName}}
+      project: {{obj.param.project}}
+      env: {{obj.param.env}}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{obj.param.metadataName}}
+        project: {{obj.param.project}}
+        env: {{obj.param.env}}
+        ci: {{obj.param.ci}}
+    spec:
+      terminationGracePeriodSeconds: 4
+      imagePullSecrets:
+        - name: harbor-secret
+      containers:
+      - name: {{obj.param.metadataName}}
+        image: {{obj.param.containersImage}}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: {{obj.param.containerPort}}
+          name: web
+          protocol: TCP
+

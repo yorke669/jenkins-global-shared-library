@@ -1,0 +1,4 @@
+ FROM {{obj.param.harborHost}}/wict/jdk-wkhtmltopdf:v1
+ WORKDIR /opt/jar
+ ADD {{obj.param.jarPathFile}} {{obj.param.deployServerName}}.jar
+ ENTRYPOINT ["sh","-c","java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /opt/jar/{{obj.param.deployServerName}}.jar"]

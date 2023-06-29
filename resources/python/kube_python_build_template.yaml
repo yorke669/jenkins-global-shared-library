@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{obj.param.metadataName}}-{{obj.param.env}}
+  namespace: {{obj.param.metadataNameSpace}}-{{obj.param.env}}
+spec:
+  selector:
+    matchLabels:
+      app: {{obj.param.metadataName}}
+      project: {{obj.param.project}}
+      env: {{obj.param.env}}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{obj.param.metadataName}}
+        project: {{obj.param.project}}
+        env: {{obj.param.env}}
+        ci: {{obj.param.ci}}
+    spec:
+      terminationGracePeriodSeconds: 4
+      imagePullSecrets:
+        - name: harbor-secret
+      containers:
+      - name: {{obj.param.metadataName}}
+        image: {{obj.param.containersImage}}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: {{obj.param.containerPort}}
+          name: web
+          protocol: TCP
+        volumeMounts:
+          - name: logs-pvc
+            subPath: logs
+            mountPath: /opt/jar/logs
+          - name: date-config
+            mountPath: /etc/localtime
+          - name: nfs-bigdata
+            mountPath: /opt/bigdata
+        env:
+          - name: TZ
+            value: Asia/Shanghai
+          - name: LIMITS_MEMORY
+            valueFrom:
+              resourceFieldRef:
+                resource: limits.memory
+                divisor: 1Mi
+          - name: JAVA_OPTS
+            value: {{obj.param.javaOpts}}
+      securityContext:
+        fsGroup: 1000
+      volumes:
+        - name: logs-pvc
+          persistentVolumeClaim:
+            claimName: logs-pvc-{{obj.param.env}}
+        - name: sw-agent
+          emptyDir: {}
+        - name: date-config
+          hostPath:
+            path: /etc/localtime
+        - name: nfs-bigdata
+          hostPath:
+            path: /opt/bigdata
+
+
