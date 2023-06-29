@@ -13,6 +13,22 @@ jenkins 自动构建，通过global-shared-library 模板，进行自动生成�
   - src/com/wict/jenkins	代码
   - vars	jenkins调用入口
 
+//在每个仓库中设置Jenkinsfile文件，放到最外层，内容如下：
+
+```
+@Library('global-shared-library') _
+
+def map = [
+wictProject:'java-service',
+wictJarFile: "target/java-service.jar",
+wictBuildCommand: "clean install -Dmaven.test.skip=true",
+deployPort: "80",
+resourcesMaxMemory: "1024Mi"
+
+]
+WictPipeline(map)
+```
+
 <img width="970" alt="image" src="https://github.com/yorkexing/jenkins-global-shared-library/assets/15082551/d79b1275-f1ca-4676-b52b-849be65b0798">
 
 <img width="1028" alt="image" src="https://github.com/yorkexing/jenkins-global-shared-library/assets/15082551/e37f7e40-8718-45c2-8e0e-03a4f4abeb06">
