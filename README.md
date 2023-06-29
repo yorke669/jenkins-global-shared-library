@@ -12,8 +12,6 @@ jenkins 自动构建，通过global-shared-library 模板，进行自动生成�
   - resources 放置的项目参数，由运维维护
   - src/com/wict/jenkins	代码
   - vars	jenkins调用入口
-    - 
-
 
 <img width="970" alt="image" src="https://github.com/yorkexing/jenkins-global-shared-library/assets/15082551/d79b1275-f1ca-4676-b52b-849be65b0798">
 
